@@ -21,6 +21,7 @@ public class TestArtsmiaDAO {
 		System.out.println(exhibitions.get(0));
 		System.out.println(exhibitions.size());
 
+		System.out.println(dao.listArchi("photographer"));
 	}
 
 }

@@ -1,8 +1,10 @@
 package it.polito.tdp.artsmia;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.artsmia.model.Adiacenza;
 import it.polito.tdp.artsmia.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -31,7 +33,7 @@ public class ArtsmiaController {
     private Button btnCalcolaPercorso;
 
     @FXML
-    private ComboBox<?> boxRuolo;
+    private ComboBox<String> boxRuolo;
 
     @FXML
     private TextField txtArtista;
@@ -42,23 +44,68 @@ public class ArtsmiaController {
     @FXML
     void doArtistiConnessi(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Calcola artisti connessi");
-    }
+
+    	try {
+    		if (model.getGrafo()==null || model.getGrafo().vertexSet().size()==0 || model.getGrafo().edgeSet().size()==0)
+        		throw new NullPointerException("Il grafo non è stato creato o è vuoto.");
+        	    	
+        	for (Adiacenza a : model.getArtistiConnessi())
+        		txtResult.appendText(String.format("L'artista %s è connesso con %s, il numero di esposizioni comuni è %f\n", a.getA1(), a.getA1(), a.getWeight()));
+        
+    	} 
+		catch (Exception e) {
+			txtResult.setText(e.getMessage());
+		}
+	}
 
     @FXML
     void doCalcolaPercorso(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Calcola percorso");
+    	
+    	try {
+    		if (txtArtista.getText().isBlank())
+        		throw new NullPointerException("Non è stato inserito alcun artista.");
+        		
+    		List<Integer> l = model.trovaPercorso(Integer.parseInt(txtArtista.getText()));
+    		
+        	for (Integer a : l)
+        		txtResult.appendText(String.format("Artista con ID %d\n",	 a) );
+        	
+        	txtResult.appendText(String.format("Il numero totale di artista è %d", l.size()));
+        	
+    	} catch (NumberFormatException ne) {
+    		txtResult.setText("Il campo indicato non è valido. Inserire un numero.");
+    	}
+    	catch (Exception e) {
+    		txtResult.setText(e.getMessage());
+    	}
+    	
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Crea grafo");
-    }
+
+    	try {
+    		if (this.boxRuolo.getSelectionModel().getSelectedItem().isBlank())
+	    		throw new NullPointerException("Non è stato selezionato alcun ruolo.");
+	    	
+	    	model.creaGrafo(this.boxRuolo.getSelectionModel().getSelectedItem());
+	    	
+	    	txtResult.appendText(String.format("Il grafo è stato creato con successo. Contiene %d vertici e %d archi.\n", model.getGrafo().vertexSet().size(), model.getGrafo().edgeSet().size()));
+    	} catch (Exception e) {
+	    		txtResult.setText(e.getMessage());
+    	}
+	}
 
     public void setModel(Model model) {
     	this.model = model;
+    	
+    	try {
+    		this.boxRuolo.getItems().addAll(model.getRuolo());
+    	} catch (Exception e) {
+    		txtResult.setText(e.getMessage());
+    	}
     }
 
     
